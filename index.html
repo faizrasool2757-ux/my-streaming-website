@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faiz Play - Watch Online</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090b12;color:white;font-family:Arial,sans-serif}
+header{background:#111522;padding:17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.logo{font-size:25px;font-weight:bold;color:#ff303c}
+.logo span{color:white}
+button{cursor:pointer;border:0;border-radius:7px;padding:10px 15px;font-weight:bold}
+.admin{background:#ed2637;color:white}
+nav{padding:12px;display:flex;gap:20px;overflow:auto;background:#151a27}
+nav a{color:white;text-decoration:none;white-space:nowrap}
+.hero{padding:35px 20px;background:linear-gradient(90deg,#101522,#35121d);min-height:230px;display:flex;flex-direction:column;justify-content:center}
+.hero h1{font-size:34px;margin:5px 0}
+.hero p{color:#ccc;max-width:450px}
+.play{background:#ed2637;color:white;width:max-content}
+.search{padding:15px}
+input{padding:13px;border-radius:7px;border:1px solid #444;background:#171d2a;color:white;width:100%;margin:6px 0}
+h2{padding:0 15px;margin-top:25px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding:12px}
+.card{background:#171d2a;border-radius:9px;overflow:hidden}
+.card img{width:100%;height:145px;object-fit:cover}
+.card h3{font-size:15px;margin:9px}
+.card p{font-size:12px;color:#aaa;margin:9px}
+.card button{margin:0 9px 12px;background:#ed2637;color:white}
+#playerBox,#adminBox{display:none;padding:18px;background:#151a27;margin:15px;border-radius:10px}
+video{width:100%;max-height:300px;background:black}
+.close{background:#555;color:white;margin:8px 0}
+.save{background:#ed2637;color:white}
+footer{text-align:center;padding:30px;color:#888}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}.hero{padding:65px}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">FAIZ <span>PLAY</span></div>
+<button class="admin" onclick="showAdmin()">Admin Panel</button>
+</header>
+
+<nav>
+<a href="#">Home</a>
+<a href="#dramas">Dramas</a>
+<a href="#movies">Movies</a>
+<a href="#shows">Shows</a>
+</nav>
+
+<section class="hero">
+<p>WELCOME TO FAIZ PLAY</p>
+<h1>Entertainment Starts Here</h1>
+<p>Watch your favourite videos and shows in one place.</p>
+<button class="play" onclick="document.getElementById('dramas').scrollIntoView()">▶ Explore Videos</button>
+</section>
+
+<div class="search">
+<input id="search" placeholder="Search dramas and movies..." oninput="renderVideos()">
+</div>
+
+<div id="playerBox">
+<button class="close" onclick="closePlayer()">✕ Close Player</button>
+<h2 id="playerTitle">Video Player</h2>
+<video id="video" controls playsinline></video>
+</div>
+
+<div id="adminBox">
+<h2>Admin Panel</h2>
+<p>Add a video using its direct MP4 URL.</p>
+<input id="adminTitle" placeholder="Video title">
+<input id="adminCategory" placeholder="Category (Drama, Movie, Show)">
+<input id="adminImage" placeholder="Poster image URL">
+<input id="adminURL" placeholder="Direct MP4 video URL">
+<button class="save" onclick="addVideo()">Add Video</button>
+<button class="close" onclick="hideAdmin()">Close Admin</button>
+<p id="message"></p>
+</div>
+
+<h2 id="dramas">Latest Videos</h2>
+<div class="grid" id="videoGrid"></div>
+
+<footer>
+<h3>FAIZ PLAY</h3>
+<p>Made with ❤️ for entertainment</p>
+<p>© 2026 Faiz Play</p>
+</footer>
+
+<script>
+const sample={
+title:"Sample Video",
+category:"Show",
+image:"https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600",
+url:"https://www.w3schools.com/html/mov_bbb.mp4"
+};
+
+let videos=JSON.parse(localStorage.getItem("faizVideos")||"null")||[sample];
+
+function save(){
+localStorage.setItem("faizVideos",JSON.stringify(videos));
+}
+
+function renderVideos(){
+const grid=document.getElementById("videoGrid");
+const q=document.getElementById("search").value.toLowerCase();
+grid.innerHTML="";
+videos.filter(v=>(v.title+" "+v.category).toLowerCase().includes(q)).forEach((v,i)=>{
+const card=document.createElement("div");
+card.className="card";
+const img=document.createElement("img");
+img.src=v.image||sample.image;
+img.alt=v.title;
+const title=document.createElement("h3");
+title.textContent=v.title;
+const category=document.createElement("p");
+category.textContent=v.category;
+const btn=document.createElement("button");
+btn.textContent="▶ Watch Now";
+btn.onclick=()=>playVideo(i);
+card.append(img,title,category,btn);
+grid.appendChild(card);
+});
+}
+
+function playVideo(i){
+const v=videos[i];
+document.getElementById("playerBox").style.display="block";
+document.getElementById("playerTitle").textContent=v.title;
+const player=document.getElementById("video");
+player.src=v.url;
+player.load();
+document.getElementById("playerBox").scrollIntoView();
+}
+
+function closePlayer(){
+const player=document.getElementById("video");
+player.pause();
+player.removeAttribute("src");
+player.load();
+document.getElementById("playerBox").style.display="none";
+}
+
+function showAdmin(){
+document.getElementById("adminBox").style.display="block";
+document.getElementById("adminBox").scrollIntoView();
+}
+function hideAdmin(){
+document.getElementById("adminBox").style.display="none";
+}
+
+function addVideo(){
+const title=document.getElementById("adminTitle").value.trim();
+const category=document.getElementById("adminCategory").value.trim()||"Video";
+const image=document.getElementById("adminImage").value.trim()||sample.image;
+const url=document.getElementById("adminURL").value.trim();
+
+if(!title||!url){
+document.getElementById("message").textContent="Please enter title and video URL.";
+return;
+}
+if(!/^https?:\/\//i.test(url)){
+document.getElementById("message").textContent="Please enter a valid video URL.";
+return;
+}
+videos.push({title,category,image,url});
+save();
+renderVideos();
+document.getElementById("message").textContent="Video added successfully!";
+document.getElementById("adminTitle").value="";
+document.getElementById("adminCategory").value="";
+document.getElementById("adminImage").value="";
+document.getElementById("adminURL").value="";
+}
+
+renderVideos();
+</script>
+</body>
+</html>
